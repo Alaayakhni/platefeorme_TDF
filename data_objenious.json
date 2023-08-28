@@ -1,0 +1,124 @@
+[
+    {
+        "id": "8254882f27ade18f",
+        "type": "tab",
+        "label": "Data_Objenious",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "5278274bf180faca",
+        "type": "http in",
+        "z": "8254882f27ade18f",
+        "name": "",
+        "url": "test",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 160,
+        "y": 180,
+        "wires": [
+            [
+                "a4021ad22ce12617"
+            ]
+        ]
+    },
+    {
+        "id": "0b6c12e9d9b2899d",
+        "type": "http response",
+        "z": "8254882f27ade18f",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 510,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "a4021ad22ce12617",
+        "type": "json",
+        "z": "8254882f27ade18f",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 330,
+        "y": 280,
+        "wires": [
+            [
+                "0b6c12e9d9b2899d",
+                "05af921940add24d"
+            ]
+        ]
+    },
+    {
+        "id": "a0a73b5d2dec9cf5",
+        "type": "influxdb out",
+        "z": "8254882f27ade18f",
+        "influxdb": "75303129e4b35fa4",
+        "name": "data_objenious",
+        "measurement": "Consommation_ModBus1",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 700,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "05af921940add24d",
+        "type": "function",
+        "z": "8254882f27ade18f",
+        "name": "function 2",
+        "func": "var client = \"inconnu\";\n// Extrait les valeurs du message\nvar data = msg.payload.data;\nvar deviceId = msg.payload.device_id;\nvar deveui = msg.payload.device_properties.deveui\nvar profile = msg.payload.profile;\nvar ville = msg.payload.city_name;\nvar igValue = msg.payload.device_properties['IG :'];\nif (igValue !== '') {\n    var ig2Number = igValue.substring(0, 2);\n}\n\n//var consommation = parseFloat(msg.payload.data.consumption);\nvar consommation;\n\nif (msg.payload.data.consumption) {\n    consommation = parseFloat(msg.payload.data.consumption);\n} else if (msg.payload.data.internal) {\n    consommation = parseFloat(msg.payload.data.internal);\n}\n// Supprime les espaces vides autour de chaque élément\nvar input2Elements = [\n    \"Bouygues_A\",\n    \"Bouygues_B\",\n    \"Free_A\",\n    \"Free_B\",\n    \"Orange_A\",\n    \"Orange_B\",\n    \"SFR_A\",\n    \"SFR_B\",\n    \"Ombriere\",\n    \"Environnement_TDF\"\n];\n\nvar inputValues = {}; // Objet pour stocker les valeurs d'input\n\n// Recherche du client dans les propriétés de data commençant par \"Input\"\nvar clientValue = null;\nfor (var prop in msg.payload.data) {\n    if (msg.payload.data[prop] === true) {\n        clientValue = prop;\n        break;\n    }\n}\nvar clientNumber = clientValue.substring(\"input\".length);\nvar resultat = \"input\" + clientNumber;\n\nvar deviceProperties = msg.payload.device_properties;\nvar propertyValues = Object.values(deviceProperties);\n\nvar secondValue = null;\nif (propertyValues.length > 1) {\n    secondValue = propertyValues[clientNumber];\n}\n\n client = input2Elements[secondValue - 1];\n\n// Ris CONDITION SELON LE CODE iG \nvar RIS = \"Inconnu\"\nif (ig2Number == \"62\" || ig2Number == \"80\" || ig2Number == \"59\" || ig2Number == \"60\" || ig2Number == \"02\" || ig2Number == \"08\" || ig2Number == \"51\") {\n    RIS = \"Lille\";\n}\n\nelse if (ig2Number == \"55\" || ig2Number == \"57\" || ig2Number == \"54\" || ig2Number == \"88\" || ig2Number == \"67\" || ig2Number == \"68\") {\n    RIS = \"Nancy\";\n}\n\nelse if (ig2Number == \"10\" || ig2Number == \"89\" || ig2Number == \"58\" || ig2Number == \"52\" || ig2Number == \"21\" || ig2Number == \"71\" || ig2Number == \"70\" || ig2Number == \"90\" || ig2Number == \"25\" || ig2Number == \"39\") {\n    RIS = \"Dijon\";\n}\n\nelse if (ig2Number == \"03\" || ig2Number == \"63\" || ig2Number == \"15\" || ig2Number == \"42\" || ig2Number == \"43\" || ig2Number == \"69\" || ig2Number == \"01\") {\n    RIS = \"Tramoyes\";\n}\n\nelse if (ig2Number == \"74\" || ig2Number == \"73\" || ig2Number == \"38\" || ig2Number == \"05\") {\n    RIS = \"Grenoble\";\n}\n\nelse if (ig2Number == \"04\" || ig2Number == \"06\" || ig2Number == \"83\" || ig2Number == \"2B\" || ig2Number == \"2A\") {\n    RIS = \"St Laurent du var\";\n}\n\nelse if (ig2Number == \"13\" || ig2Number == \"84\" || ig2Number == \"26\" || ig2Number == \"07\") {\n    RIS = \"Réaltor\";\n}\n\nelse if (ig2Number == \"66\" || ig2Number == \"11\" || ig2Number == \"34\" || ig2Number == \"81\" || ig2Number == \"12\" || ig2Number == \"48\" || ig2Number == \"30\") {\n    RIS = \"Montpelier\";\n}\n\nelse if (ig2Number == \"09\" || ig2Number == \"31\" || ig2Number == \"82\" || ig2Number == \"32\" || ig2Number == \"65\" || ig2Number == \"47\" || ig2Number == \"64\" || ig2Number == \"40\" || ig2Number == \"33\") {\n    RIS = \"Toulouse\";\n}\n\nelse if (ig2Number == \"46\" || ig2Number == \"19\" || ig2Number == \"23\" || ig2Number == \"87\" || ig2Number == \"24\" || ig2Number == \"16\" || ig2Number == \"86\" || ig2Number == \"79\" || ig2Number == \"17\") {\n    RIS = \"Le vigen\";\n}\n\nelse if (ig2Number == \"18\" || ig2Number == \"36\" || ig2Number == \"41\" || ig2Number == \"45\" || ig2Number == \"37\" || ig2Number == \"28\") {\n    RIS = \"Tours\";\n}\n\nelse if (ig2Number == \"29\" || ig2Number == \"22\" || ig2Number == \"56\" || ig2Number == \"35\" || ig2Number == \"44\" || ig2Number == \"85\") {\n    RIS = \"Rennes\";\n}\n\nif (ig2Number == \"49\" || ig2Number == \"72\" || ig2Number == \"53\" || ig2Number == \"61\" || ig2Number == \"50\" || ig2Number == \"14\" || ig2Number == \"27\" || ig2Number == \"76\") {\n    RIS = \"Caen\";\n}\n\nelse if (ig2Number == \"91\" || ig2Number == \"78\" || ig2Number == \"95\" || ig2Number == \"77\" || ig2Number == \"75\" || ig2Number == \"92\" || ig2Number == \"94\" || ig2Number == \"93\") {\n    RIS = \"Vilebon\";\n}\n\n/// Region //\nvar region = \"Inconnu\"\n\nif (RIS == \"Lille\" || RIS == \"Nancy\" || RIS == \"Dijon\" || RIS == \"Vilebon\") {\n    region = \"Nord Est\"\n}\n\nif (RIS == \"Tramoyes\" || RIS == \"Grenoble\" || RIS == \" St Laurent du var\" || RIS == \"Réaltor\") {\n    region = \"Sud Est\"\n}\n\nif (RIS == \"Montpelier\" || RIS == \"Toulouse\" || RIS == \"Le vigen\") {\n    region = \"Nord Ouest\"\n}\n\nif (RIS == \"Tours\" || RIS == \"Rennes\" || RIS == \"Caen\") {\n    region = \"Nord Est\"\n}\n// Crée un nouvel objet msgv pour stocker les valeurs\nvar msgv = {\n    deviceId,\n    profile,\n    //ville,\n    //  clientNumber: clientNumber,\n    ig: igValue,\n    region,\n    RIS,\n    client,\n    consommation,\n    deveui\n    // input2Elements: input2Elements,\n    // resultat: resultat,\n    // secondValue: secondValue,\n\n};\n\n// Retourne le nouvel objet msg\nmsg.payload = msgv;\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 420,
+        "wires": [
+            [
+                "a0a73b5d2dec9cf5",
+                "a0a4bc93fb166196"
+            ]
+        ]
+    },
+    {
+        "id": "a0a4bc93fb166196",
+        "type": "debug",
+        "z": "8254882f27ade18f",
+        "name": "debug 1",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 760,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "75303129e4b35fa4",
+        "type": "influxdb",
+        "hostname": "192.168.201.21",
+        "port": "8086",
+        "protocol": "http",
+        "database": "mydatabase",
+        "name": "consommation",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "1.x",
+        "url": "http://localhost:8086",
+        "rejectUnauthorized": true
+    }
+]
