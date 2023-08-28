@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Capteurs déconnectés pendant une semaine</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .total-count {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        .ris-group-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .ris-group-column {
+            flex-basis: 50%;
+            padding: 0 10px;
+        }
+
+        .ris-group {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+            margin-bottom: 20px; /* Ajouter une marge basse pour l'espace vertical */
+            flex-basis: calc(50% - 10px); /* Largeur égale à la moitié moins l'espace entre les groupes */
+            max-width: 600px; /* Limite la largeur maximale du groupe */
+        }
+
+
+        .ris-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .deveui-info {
+            font-size: 16px;
+            margin-left: 20px;
+            color: #666;
+        }
+
+        .unknown-message {
+            font-weight: bold;
+            color: #ff0000;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RIS, Deveui et IG correspondants pour les capteurs déconnectés au cours de la dernière semaine ( 7 jours) </h1>
+        
+        <div class="total-count">Nombre total de capteurs déconnectés : {{ nombre_deveui_non_communs_Semaine }}</div>
+
+        <div class="ris-group-container">
+            <div class="ris-column">
+                {% for ris_value, data in ris_deveui_non_communs_Semaine.items() %}
+                    {% if loop.index <= ris_deveui_non_communs_Semaine|length//2 %}
+                        <div class="ris-group">
+                            <div class="ris-title">RIS : {{ ris_value }} (Nombre des capteurs déconnectés : {{ data['count'] }})</div>
+                            {% if ris_value == 'Inconnu' %}
+                                <p class="unknown-message">Inconnu correspond à des capteurs qui ont été incorrectement ajoutés dans le coeur de réseau</p>
+                            {% endif %}
+                            <ul>
+                            {% for item in data['data'] %}
+                                <li class="deveui-info">deveui: {{ item['deveui'] }}, IG: {{ ', '.join(item['ig_mapping']) }}</li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="ris-column">
+                {% for ris_value, data in ris_deveui_non_communs_Semaine.items() %}
+                    {% if loop.index > ris_deveui_non_communs_Semaine|length//2 %}
+                        <div class="ris-group">
+                            <div class="ris-title">RIS : {{ ris_value }} (Nombre des capteurs déconnectés : {{ data['count'] }})</div>
+                            {% if ris_value == 'Inconnu' %}
+                                <p class="unknown-message">Inconnu correspond à des capteurs qui ont été incorrectement ajoutés dans le coeur de réseau</p>
+                            {% endif %}
+                            <ul>
+                            {% for item in data['data'] %}
+                                <li class="deveui-info">deveui: {{ item['deveui'] }}, IG: {{ ', '.join(item['ig_mapping']) }}</li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
