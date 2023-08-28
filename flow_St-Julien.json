@@ -1,0 +1,470 @@
+[
+    {
+        "id": "638e1b007df81063",
+        "type": "tab",
+        "label": "St_Julien",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "74b00b8fc4949dbb",
+        "type": "http in",
+        "z": "638e1b007df81063",
+        "name": "",
+        "url": "test4",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 170,
+        "y": 300,
+        "wires": [
+            [
+                "5c7bcacd60b0a37f",
+                "584cc440d6770b42"
+            ]
+        ]
+    },
+    {
+        "id": "5c7bcacd60b0a37f",
+        "type": "json",
+        "z": "638e1b007df81063",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 430,
+        "y": 300,
+        "wires": [
+            [
+                "6a18f369a19b08ab",
+                "17a0c8a58a27ccaf",
+                "f57aab0f7bc2f509",
+                "395a884ae06d191c",
+                "f14b2738cdd86ff5",
+                "f05096f1f45bf0e2",
+                "952d8dba436b9a93",
+                "730407c5b16b5e02",
+                "aa7ec69d583dc435",
+                "30c2119fd55fb896"
+            ]
+        ]
+    },
+    {
+        "id": "6a18f369a19b08ab",
+        "type": "function",
+        "z": "638e1b007df81063",
+        "name": "modBus",
+        "func": "var Id = msg.payload.deveui;\nvar Nom = msg.payload.device_name;\n\nif (Nom == \"NKE ModBus StJulLesMetz\") {\nvar data = msg.payload.data.values;\n\nvar Energie;\n\nif (data[0][1] ==\"Multi_fluid|4|IEnergy\") {\n   Energie = data[0][2];\n}\n\nvar message = {\n   Id: Id,\n   Nom: Nom,\n  Energie: Energie\n};\n\n\n   msg.payload = message;\n   return msg;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 200,
+        "wires": [
+            [
+                "5f7f5eb21904d569"
+            ]
+        ]
+    },
+    {
+        "id": "17a0c8a58a27ccaf",
+        "type": "function",
+        "z": "638e1b007df81063",
+        "name": "thr salle Mux",
+        "func": "var Id = msg.payload.deveui;\nvar Name = msg.payload.device_name;\nif (Name == \"StJulienLesMetz - Température salle Mux\") {\nvar data = msg.payload.data.values[0];\n\n\nvar temperature;\nvar humidity;\nvar voltage;\n\nif (data[1] == \"Multi_Fluid|0|IHumidity\") {\n    humidity = data[2];\n}\n\nif (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n    temperature = data[2];\n\n}\n\nif (data[1] == \"Global|0|IDeviceBatteryVoltage\") {\n    voltage = data[2];\n\n}\n\nvar msg1 = {\n    Id,\n    Name,\n   humidity\n   \n};\n\nvar msg2 = {\n    Id,\n    Name,\n    temperature\n\n};\n\nvar msg3 = {\n    Id,\n    Name,\n   voltage\n\n};\n\n\n\n    if (data[1] == \"Multi_Fluid|0|IHumidity\") {\n        msg.payload = msg1;\n        return msg;\n    }\n    if (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n        msg.payload = msg2;\n        return msg;\n    }\n    if (data[1] == \"Global|0|IDeviceBatteryVoltage\") {\n        msg.payload = msg3;\n        return msg;\n    }\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 850,
+        "y": 340,
+        "wires": [
+            [
+                "2b7a4d5189043d92"
+            ]
+        ]
+    },
+    {
+        "id": "f57aab0f7bc2f509",
+        "type": "function",
+        "z": "638e1b007df81063",
+        "name": "E-predict",
+        "func": "var Id = msg.payload.deveui;\nvar Name = msg.payload.device_name;\n\nif (Name == \"Capteur E_PREDICT-1 St_Julien\") {\n\nvar data1 = msg.payload.data.values[0];\nvar data2 = msg.payload.data.values[1];\nvar data3 = msg.payload.data.values[2];\n\nvar temperature;\nvar humidity;\nvar smoke;\n\n\nif (data1[1] == \"Multi_Fluid|0|IHumidity\") {\n    humidity = data1[2];\n}\n\nif (data2[1] == \"Multi_Fluid|0|IInstTemperature\") {\n    temperature = data2[2];\n\n}\n\nif (data3[1] == \"Item|0|ILevel\") {\n    smoke = data3[2];\n\n}\n\n\nvar message = {\n    Id,\n    Name,\n    humidity,\n    temperature,\n    smoke\n\n};\n\n\n\n\n    msg.payload = message;\n    return msg;\n}\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 260,
+        "wires": [
+            [
+                "d5c768a55692e475"
+            ]
+        ]
+    },
+    {
+        "id": "5f7f5eb21904d569",
+        "type": "influxdb out",
+        "z": "638e1b007df81063",
+        "influxdb": "75303129e4b35fa4",
+        "name": "wiotys-ModBus",
+        "measurement": "consommation_StJulien",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1080,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "395a884ae06d191c",
+        "type": "function",
+        "z": "638e1b007df81063",
+        "name": "thr salle principale",
+        "func": "var Id = msg.payload.deveui;\nvar Name = msg.payload.device_name;\n\nif (Name == \"NKE Th - Salle Principale\") \n{\n\nvar data = msg.payload.data.values[0];\n\n\nvar temperature;\nvar humidity;\nvar voltage;\n\nif (data[1] == \"Multi_Fluid|0|IHumidity\") {\n    humidity = data[2];\n}\n\nif (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n    temperature = data[2];\n\n}\nif (data[1] == \"Global|0|IDeviceBatteryVoltage\") {\n    voltage = data[2];\n\n}\n\n\n\nvar msg1 = {\n    Id,\n    Name,\n   humidity\n   \n};\n\nvar msg2 = {\n    Id,\n    Name,\n    temperature\n\n};\nvar msg3 = {\n    Id,\n    Name,\n    voltage\n\n};\n\n\n\n    if (data[1] == \"Multi_Fluid|0|IHumidity\") {\n        msg.payload = msg1;\n        return msg;\n    }\n    \n    if (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n        msg.payload = msg2;\n        return msg;\n    }\n    if (data[1] == \"Global|0|IDeviceBatteryVoltage\") {\n        msg.payload = msg3;\n        return msg;\n    }\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 400,
+        "wires": [
+            [
+                "2ee55c1477e4a721"
+            ]
+        ]
+    },
+    {
+        "id": "d5c768a55692e475",
+        "type": "influxdb out",
+        "z": "638e1b007df81063",
+        "influxdb": "75303129e4b35fa4",
+        "name": "E-predict",
+        "measurement": "E-predict_StJulien",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1080,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "f14b2738cdd86ff5",
+        "type": "function",
+        "z": "638e1b007df81063",
+        "name": "Teklek",
+        "func": "var Id = msg.payload.deveui;\nvar Name = msg.payload.device_name;\n\nif (Name == \"Level_Monitor-TEK766_StJulien\") {\nvar data1 = msg.payload.data.values[3];\nvar data2 = msg.payload.data.values[4];\n\n\nvar temperature;\nvar distance;\n\n\n\nif (data1[2] == \"Multi_Fluid|0|IDistance\") {\n    distance = data1[3];\n}\n\nif (data2[2] == \"Multi_Fluid|0|IInstTemperature\") {\n    temperature = data2[3];\n\n}\n\n\n\n\nvar message = {\n    Id,\n    Name,\n  \n    temperature,\n    distance\n\n};\n\n\n\n\n    msg.payload = message;\n    return msg;\n}\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 480,
+        "wires": [
+            [
+                "e953a07b11909991"
+            ]
+        ]
+    },
+    {
+        "id": "f05096f1f45bf0e2",
+        "type": "function",
+        "z": "638e1b007df81063",
+        "name": "Atmo",
+        "func": "var Id = msg.payload.deveui;\nvar Name = msg.payload.device_name;\n\nif (Name == \"StJulien_AtmO\") {\nvar data = msg.payload.data.values[0];\n\n\nvar temperature;\nvar humidity;\nvar pression;\n\nif (data[1] == \"Multi_Fluid|0|IHumidity\") {\n    humidity = data[2];\n}\n\nif (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n    temperature = data[2];\n\n}\n\nif (data[1] == \"Multi_Fluid|0|IPressure\") {\n    pression = data[2];\n\n}\n\nvar msg1 = {\n    Id,\n    Name,\n    humidity\n\n};\n\nvar msg2 = {\n    Id,\n    Name,\n    temperature\n\n};\nvar msg3 = {\n    Id,\n    Name,\n    pression\n\n};\n\n\n\n    if (data[1] == \"Multi_Fluid|0|IHumidity\") {\n        msg.payload = msg1;\n        return msg;\n    }\n    \n    if (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n        msg.payload = msg2;\n        return msg;\n    }\n    if (data[1] == \"Multi_Fluid|0|IPressure\") {\n        msg.payload = msg3;\n        return msg;\n    }\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 540,
+        "wires": [
+            [
+                "591037d3bcf635ad"
+            ]
+        ]
+    },
+    {
+        "id": "952d8dba436b9a93",
+        "type": "function",
+        "z": "638e1b007df81063",
+        "name": "StJulien_Remote_temp 2CTN_1",
+        "func": "var Id = msg.payload.deveui;\nvar Name = msg.payload.device_name;\n\nif (Name == \"StJulien_Remote_temp 2CTN_1\") {\nvar data = msg.payload.data.values[0];\n\n\nvar temperature1;\nvar temperature2;\n\n\nif (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n    temperature1= data[2];\n}\n\nif (data[1] == \"Multi_Fluid|1|IInstTemperature\") {\n    temperature2 = data[2];\n\n}\n\n\n\nvar msg1 = {\n    Id,\n    Name,\n    temperature1\n\n};\n\nvar msg2 = {\n    Id,\n    Name,\n    temperature2\n\n};\n\n\n\n    if (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n        msg.payload = msg1;\n        return msg;\n    }\n    if (data[1] == \"Multi_Fluid|1|IInstTemperature\") {\n        msg.payload = msg2;\n        return msg;\n    }\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 620,
+        "wires": [
+            [
+                "d7e102560d62da09"
+            ]
+        ]
+    },
+    {
+        "id": "730407c5b16b5e02",
+        "type": "function",
+        "z": "638e1b007df81063",
+        "name": "StJulien_Remote_temp 2CTN_2",
+        "func": "var Id = msg.payload.deveui;\nvar Name = msg.payload.device_name;\n\nif (Name == \"StJulien_Remote_temp 2CTN_2\") {\n\nvar data = msg.payload.data.values[0];\n\n\nvar temperature1;\nvar temperature2;\n\n\nif (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n    temperature1 = data[2];\n}\n\nif (data[1] == \"Multi_Fluid|1|IInstTemperature\") {\n    temperature2 = data[2];\n\n}\n\n\n\nvar msg1 = {\n    Id,\n    Name,\n    temperature1\n\n};\n\nvar msg2 = {\n    Id,\n    Name,\n    temperature2\n\n};\n\n\n\n    if (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n        msg.payload = msg1;\n        return msg;\n    }\n    if (data[1] == \"Multi_Fluid|1|IInstTemperature\") {\n        msg.payload = msg2;\n        return msg;\n    }\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 700,
+        "wires": [
+            [
+                "8da208af930e4122"
+            ]
+        ]
+    },
+    {
+        "id": "2b7a4d5189043d92",
+        "type": "influxdb out",
+        "z": "638e1b007df81063",
+        "influxdb": "75303129e4b35fa4",
+        "name": "thr salle Mux",
+        "measurement": "thr_salle_Mux_StJulien",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1070,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "2ee55c1477e4a721",
+        "type": "influxdb out",
+        "z": "638e1b007df81063",
+        "influxdb": "75303129e4b35fa4",
+        "name": "thr salle principale",
+        "measurement": "thr_salle_principale_stJulien",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1070,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "aa7ec69d583dc435",
+        "type": "function",
+        "z": "638e1b007df81063",
+        "name": "StJulien_VentilO",
+        "func": "var Id = msg.payload.deveui;\nvar Name = msg.payload.device_name;\n\nif (Name == \"StJulien_VentilO\") {\n\nvar data = msg.payload.data.values[0];\n\n\nvar temperature;\nvar diffPressure;\n\n\nif (data[2] == \"Multi_Fluid|0|IPressure\") {\n    diffPressure = data[3];\n}\n\nif (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n    temperature = data[2];\n\n}\n\n\n\nvar msg1 = {\n    Id,\n    Name,\n    diffPressure\n\n};\n\nvar msg2 = {\n    Id,\n    Name,\n    temperature\n\n};\n\n\n\n    if (data[2] == \"Multi_Fluid|0|IPressure\") {\n        msg.payload = msg1;\n        return msg;\n    }\n    if (data[1] == \"Multi_Fluid|0|IInstTemperature\") {\n        msg.payload = msg2;\n        return msg;\n    }\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 780,
+        "wires": [
+            [
+                "b63145fbb70c8ac4"
+            ]
+        ]
+    },
+    {
+        "id": "30c2119fd55fb896",
+        "type": "function",
+        "z": "638e1b007df81063",
+        "name": "Water_Leak",
+        "func": "var Id = msg.payload.deveui;\nvar Name = msg.payload.device_name;\n\nif (Name == \"Water_Leak\") {\nvar data = msg.payload.data.values[1];\n\n\n    \nvar waterLeak;\n\n\n\nif (data[1] == \"Item|0|IGenericStatus\") {\n     waterLeak= data[2];\n}\n\n\n\n\nvar msg1 = {\n    Id,\n    Name,\n    waterLeak\n\n};\n\n\n\n\n\n    if (data[1] == \"Item|0|IGenericStatus\") {\n        msg.payload = msg1;\n        return msg;\n    }\n   \n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 810,
+        "y": 860,
+        "wires": [
+            [
+                "2e4cc6162459547a"
+            ]
+        ]
+    },
+    {
+        "id": "591037d3bcf635ad",
+        "type": "influxdb out",
+        "z": "638e1b007df81063",
+        "influxdb": "75303129e4b35fa4",
+        "name": "AtmO_StJulien",
+        "measurement": "AtmO_StJulien",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1080,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "d7e102560d62da09",
+        "type": "influxdb out",
+        "z": "638e1b007df81063",
+        "influxdb": "75303129e4b35fa4",
+        "name": "StJulien_Remote_temp_2CTN_1",
+        "measurement": "StJulien_Remote_temp_2CTN_1",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1180,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "8da208af930e4122",
+        "type": "influxdb out",
+        "z": "638e1b007df81063",
+        "influxdb": "75303129e4b35fa4",
+        "name": "StJulien_Remote_temp_2CTN_2",
+        "measurement": "StJulien_Remote_temp_2CTN_2",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1160,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "b63145fbb70c8ac4",
+        "type": "influxdb out",
+        "z": "638e1b007df81063",
+        "influxdb": "75303129e4b35fa4",
+        "name": "StJulien_VentilO",
+        "measurement": "StJulien_VentilO",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1140,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "2e4cc6162459547a",
+        "type": "influxdb out",
+        "z": "638e1b007df81063",
+        "influxdb": "75303129e4b35fa4",
+        "name": "Water_Leak",
+        "measurement": "Water_Leak",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1130,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "e953a07b11909991",
+        "type": "influxdb out",
+        "z": "638e1b007df81063",
+        "influxdb": "75303129e4b35fa4",
+        "name": "Teklek",
+        "measurement": "Teklek_StJulien",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1070,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "446d74585e0bd2ef",
+        "type": "debug",
+        "z": "638e1b007df81063",
+        "name": "debug 2",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 620,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "584cc440d6770b42",
+        "type": "json",
+        "z": "638e1b007df81063",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 310,
+        "y": 120,
+        "wires": [
+            [
+                "446d74585e0bd2ef"
+            ]
+        ]
+    },
+    {
+        "id": "75303129e4b35fa4",
+        "type": "influxdb",
+        "hostname": "192.168.201.21",
+        "port": "8086",
+        "protocol": "http",
+        "database": "mydatabase",
+        "name": "consommation",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "1.x",
+        "url": "http://localhost:8086",
+        "rejectUnauthorized": true
+    }
+]
